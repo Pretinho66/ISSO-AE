@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MK · Luta Sombria</title>
+  <style>
+    /* ===== style.css ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      background: #0b0b0b;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Arial Black', 'Impact', sans-serif;
+    }
+
+    .game-wrapper {
+      background: #1a1010;
+      padding: 20px;
+      border-radius: 40px 40px 20px 20px;
+      box-shadow: 0 0 40px rgba(180, 20, 20, 0.3), inset 0 0 30px #2a1a1a;
+      border: 2px solid #4a2a2a;
+    }
+
+    .game-container {
+      position: relative;
+      width: 1000px;
+      max-width: 100%;
+      aspect-ratio: 16/9;
+      background: radial-gradient(circle at 20% 30%, #2a1a1a, #0a0505);
+      border-radius: 30px;
+      overflow: hidden;
+      box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.9), 0 0 50px #3a0f0f;
+      border: 2px solid #5a2a2a;
+    }
+
+    /* névoa / arena */
+    .arena-fog {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(45deg, rgba(40, 20, 20, 0.2) 0px, rgba(0, 0, 0, 0.4) 40px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* barras de vida */
+    .health-bars {
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      right: 30px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 20;
+      gap: 20px;
+      pointer-events: none;
+    }
+
+    .health-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .health-wrap.p1 { align-items: flex-start; }
+    .health-wrap.p2 { align-items: flex-end; }
+
+    .health-label {
+      color: #ccc;
+      font-size: 1.2rem;
+      letter-spacing: 3px;
+      text-shadow: 0 0 10px #a00;
+      background: rgba(0,0,0,0.5);
+      padding: 0 12px;
+      border-radius: 20px;
+    }
+
+    .health-track {
+      width: 100%;
+      height: 22px;
+      background: #221111;
+      border-radius: 30px;
+      border: 2px solid #553333;
+      overflow: hidden;
+      box-shadow: inset 0 0 10px #000;
+    }
+
+    .health-fill {
+      height: 100%;
+      width: 100%;
+      transition: width 0.2s ease;
+      background: #c02020;
+      box-shadow: 0 0 20px #f22;
+    }
+
+    .p2 .health-fill {
+      background: #2060c0;
+      box-shadow: 0 0 20px #2af;
+    }
+
+    .timer {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      background: #0a0a0a;
+      padding: 4px 24px;
+      border-radius: 40px;
+      border: 2px solid #933;
+      color: #f0d0d0;
+      font-size: 2.2rem;
+      font-weight: bold;
+      text-shadow: 0 0 20px #f44;
+      letter-spacing: 4px;
+      pointer-events: none;
+    }
+
+    /* personagens (estilo geométrico) */
+    .fighter {
+      position: absolute;
+      bottom: 40px;
+      width: 70px;
+      height: 120px;
+      z-index: 10;
+      transition: all 0.08s linear;
+      pointer-events: none;
+    }
+
+    .fighter.p1 {
+      left: 160px;
+      background: radial-gradient(circle at 30% 20%, #f44, #700);
+      border-radius: 40% 40% 20% 20% / 60% 60% 20% 20%;
+      box-shadow: 0 0 30px #f22, inset 0 -20px 30px #500;
+      border: 3px solid #a33;
+    }
+
+    .fighter.p2 {
+      right: 160px;
+      background: radial-gradient(circle at 70% 20%, #4af, #0044aa);
+      border-radius: 40% 40% 20% 20% / 60% 60% 20% 20%;
+      box-shadow: 0 0 30px #2af, inset 0 -20px 30px #003;
+      border: 3px solid #3af;
+    }
+
+    .fighter .head {
+      width: 50px;
+      height: 50px;
+      background: inherit;
+      border-radius: 50%;
+      margin: -10px auto 0;
+      border: 3px solid rgba(255,255,200,0.3);
+    }
+
+    .fighter .body {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto;
+      background: inherit;
+      border-radius: 30% 30% 10% 10%;
+      clip-path: polygon(10% 0%, 90% 0%, 80% 100%, 20% 100%);
+    }
+
+    .fighter .legs {
+      display: flex;
+      justify-content: space-around;
+      margin-top: -5px;
+    }
+
+    .fighter .legs div {
+      width: 18px;
+      height: 30px;
+      background: #221;
+      border-radius: 0 0 10px 10px;
+      border-left: 3px solid #443;
+      border-right: 3px solid #443;
+    }
+
+    /* efeitos de golpe */
+    .hit-effect {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffcc44, #ff6600);
+      opacity: 0.8;
+      transform: scale(0);
+      animation: hitPop 0.25s ease-out forwards;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    @keyframes hitPop {
+      0% { transform: scale(0.2); opacity: 1; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    .screen-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 5rem;
+      font-weight: bold;
+      color: #f0d0a0;
+      text-shadow: 0 0 40px #f44, 0 0 80px #a00;
+      z-index: 40;
+      pointer-events: none;
+      letter-spacing: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 20px 60px;
+      border-radius: 40px;
+      border: 3px solid #a33;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .screen-text.show {
+      opacity: 1;
+    }
+
+    .history {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 25;
+      background: rgba(0,0,0,0.7);
+      color: #ddd;
+      padding: 4px 20px;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      border: 1px solid #555;
+      max-width: 80%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+    }
+
+    .restart-btn {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      background: #2a0f0f;
+      border: 3px solid #a33;
+      color: #f0d0d0;
+      font-size: 1.5rem;
+      padding: 8px 40px;
+      border-radius: 60px;
+      cursor: pointer;
+      font-weight: bold;
+      letter-spacing: 4px;
+      box-shadow: 0 0 30px #a00;
+      transition: 0.2s;
+      display: none;
+    }
+
+    .restart-btn:hover {
+      background: #4a1a1a;
+      transform: translateX(-50%) scale(1.05);
+      box-shadow: 0 0 60px #f44;
+    }
+
+    @media (max-width: 700px) {
+      .health-label { font-size: 0.8rem; }
+      .timer { font-size: 1.4rem; padding: 2px 14px; }
+      .fighter { transform: scale(0.7); }
+      .screen-text { font-size: 2.8rem; padding: 10px 30px; }
+    }
+  </style>
+</head>
+<body>
+<div class="game-wrapper">
+  <div class="game-container" id="gameContainer">
+    <div class="arena-fog"></div>
+
+    <!-- barras de vida -->
+    <div class="health-bars">
+      <div class="health-wrap p1">
+        <div class="health-label">P1 · VERMELHO</div>
+        <div class="health-track"><div class="health-fill" id="healthP1" style="width:100%"></div></div>
+      </div>
+      <div class="health-wrap p2">
+        <div class="health-label">P2 · AZUL</div>
+        <div class="health-track"><div class="health-fill" id="healthP2" style="width:100%"></div></div>
+      </div>
+    </div>
+    <div class="timer" id="timerDisplay">60</div>
+
+    <!-- fighters -->
+    <div class="fighter p1" id="fighter1"><div class="head"></div><div class="body"></div><div class="legs"><div></div><div></div></div></div>
+    <div class="fighter p2" id="fighter2"><div class="head"></div><div class="body"></div><div class="legs"><div></div><div></div></div></div>
+
+    <!-- textos -->
+    <div class="screen-text" id="screenText">FIGHT!</div>
+    <div class="history" id="historyLog">⚔️ 準備</div>
+    <button class="restart-btn" id="restartBtn">↺ REINICIAR</button>
+  </div>
+</div>
+
+<script>
+  // ===== main.js =====
+  (function() {
+    'use strict';
+
+    // DOM
+    const p1 = document.getElementById('fighter1');
+    const p2 = document.getElementById('fighter2');
+    const healthP1 = document.getElementById('healthP1');
+    const healthP2 = document.getElementById('healthP2');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const screenText = document.getElementById('screenText');
+    const historyLog = document.getElementById('historyLog');
+    const restartBtn = document.getElementById('restartBtn');
+    const container = document.getElementById('gameContainer');
+
+    // estado
+    const state = {
+      p1: { x: 160, y: 0, hp: 100, maxHp: 100, hitCooldown: 0, specialCooldown: 0, block: false, combo: 0 },
+      p2: { x: 770, y: 0, hp: 100, maxHp: 100, hitCooldown: 0, specialCooldown: 0, block: false, combo: 0 },
+      timer: 60,
+      round: 1,
+      p1Wins: 0,
+      p2Wins: 0,
+      fighting: false,
+      ko: false,
+      winner: null,
+      roundActive: false,
+      screenTimeout: null,
+    };
+
+    // teclas
+    const keys = {};
+
+    // helpers
+    function updateUI() {
+      healthP1.style.width = Math.max(0, (state.p1.hp / state.p1.maxHp) * 100) + '%';
+      healthP2.style.width = Math.max(0, (state.p2.hp / state.p2.maxHp) * 100) + '%';
+      p1.style.left = state.p1.x + 'px';
+      p2.style.left = state.p2.x + 'px';
+    }
+
+    function showScreenText(text, duration = 800) {
+      screenText.textContent = text;
+      screenText.classList.add('show');
+      if (state.screenTimeout) clearTimeout(state.screenTimeout);
+      state.screenTimeout = setTimeout(() => {
+        screenText.classList.remove('show');
+      }, duration);
+    }
+
+    function addHistory(msg) {
+      historyLog.textContent = '⚡ ' + msg + ' | ' + historyLog.textContent.slice(0, 40);
+    }
+
+    function shakeScreen(intensity = 6) {
+      container.style.transition = 'transform 0.05s';
+      container.style.transform = `translate(${Math.random()*intensity - intensity/2}px, ${Math.random()*intensity - intensity/2}px)`;
+      setTimeout(() => { container.style.transform = 'translate(0,0)'; }, 100);
+    }
+
+    // partículas de sangue (estilizado)
+    function spawnBlood(x, y) {
+      for (let i = 0; i < 10; i++) {
+        const el = document.createElement('div');
+        el.style.cssText = `
+          position: absolute; left:${x}px; top:${y}px;
+          width: ${8+Math.random()*15}px; height: ${8+Math.random()*15}px;
+          background: radial-gradient(circle, #c00, #600);
+          border-radius: 50%;
+          pointer-events: none; z-index:35;
+          opacity: 0.9;
+          transition: all 0.5s ease-out;
+        `;
+        container.appendChild(el);
+        const dx = (Math.random()-0.5)*120, dy = (Math.random()-0.5)*120 - 30;
+        setTimeout(() => {
+          el.style.transform = `translate(${dx}px, ${dy}px) scale(0.2)`;
+          el.style.opacity = '0';
+        }, 10);
+        setTimeout(() => el.remove(), 600);
+      }
+    }
+
+    // golpe
+    function applyHit(attacker, defender, damage, knockback = 30, isSpecial = false) {
+      if (state.ko || !state.roundActive) return;
+      if (defender.block) {
+        damage = Math.floor(damage * 0.3);
+        addHistory('🛡️ Defesa!');
+        if (damage < 1) return;
+      }
+      defender.hp = Math.max(0, defender.hp - damage);
+      defender.hitCooldown = 10;
+      // flinch / knockback
+      const dir = attacker === state.p1 ? 1 : -1;
+      defender.x = Math.min(850, Math.max(50, defender.x + dir * knockback));
+      updateUI();
+      spawnBlood(defender.x + 30, 80);
+      shakeScreen(damage > 10 ? 10 : 5);
+
+      if (isSpecial) addHistory(`💥 ESPECIAL! -${damage}`);
+      else addHistory(`💢 -${damage}`);
+
+      if (defender.hp <= 0) {
+        defender.hp = 0;
+        state.ko = true;
+        state.roundActive = false;
+        state.winner = attacker === state.p1 ? 'P1' : 'P2';
+        showScreenText('K.O.!', 1200);
+        setTimeout(() => {
+          showScreenText(`${state.winner} VENCEU!`, 2000);
+          restartBtn.style.display = 'block';
+        }, 800);
+        addHistory(`🏆 ${state.winner} VENCEU!`);
+      }
+    }
+
+    // ataque
+    function attack(player, type) {
+      if (state.ko || !state.roundActive) return;
+      const attacker = player === 1 ? state.p1 : state.p2;
+      const defender = player === 1 ? state.p2 : state.p1;
+      const aEl = player === 1 ? p1 : p2;
+      const dEl = player === 1 ? p2 : p1;
+
+      const dist = Math.abs(attacker.x - defender.x);
+      if (dist > 110) { addHistory('❌ longe'); return; }
+
+      let damage = 0, knock = 20, special = false;
+      if (type === 'punch') { damage = 5; knock = 15; }
+      else if (type === 'kick') { damage = 8; knock = 25; }
+      else if (type === 'special') {
+        if (attacker.specialCooldown > 0) { addHistory('⏳ recarga especial'); return; }
+        damage = 15; knock = 40; special = true;
+        attacker.specialCooldown = 300; // 5s ~ 300 frames (60fps)
+        // efeito flash
+        aEl.style.boxShadow = '0 0 80px #ff0';
+        setTimeout(() => aEl.style.boxShadow = '', 200);
+      }
+      applyHit(attacker, defender, damage, knock, special);
+
+      // Efeito hit visual
+      const hitEl = document.createElement('div');
+      hitEl.className = 'hit-effect';
+      const cx = (attacker.x + defender.x) / 2;
+      hitEl.style.left = (cx - 30) + 'px';
+      hitEl.style.top = '60px';
+      container.appendChild(hitEl);
+      setTimeout(() => hitEl.remove(), 300);
+    }
+
+    // reset round
+    function resetRound() {
+      state.p1.hp = state.p1.maxHp;
+      state.p2.hp = state.p2.maxHp;
+      state.p1.x = 160;
+      state.p2.x = 770;
+      state.p1.hitCooldown = 0;
+      state.p2.hitCooldown = 0;
+      state.p1.specialCooldown = 0;
+      state.p2.specialCooldown = 0;
+      state.p1.block = false;
+      state.p2.block = false;
+      state.ko = false;
+      state.winner = null;
+      state.roundActive = true;
+      state.timer = 60;
+      timerDisplay.textContent = '60';
+      restartBtn.style.display = 'none';
+      updateUI();
+      showScreenText('FIGHT!', 700);
+      addHistory('⚔️ Round ' + state.round);
+    }
+
+    // next round
+    function nextRound() {
+      if (state.p1Wins >= 2 || state.p2Wins >= 2) {
+        // fim
+        restartBtn.style.display = 'block';
+        showScreenText(`🏆 ${state.p1Wins>state.p2Wins?'P1':'P2'} CAMPEÃO!`, 3000);
+        return;
+      }
+      state.round++;
+      resetRound();
+    }
+
+    // game loop
+    function gameLoop() {
+      if (state.roundActive && !state.ko) {
+        // timer
+        if (state.timer > 0) {
+          state.timer -= 1/60;
+          timerDisplay.textContent = Math.ceil(state.timer);
+        } else {
+          state.timer = 0;
+          timerDisplay.textContent = '0';
+          // decisão por vida
+          state.roundActive = false;
+          if (state.p1.hp > state.p2.hp) { state.p1Wins++; showScreenText('P1 VENCE!', 1000); }
+          else if (state.p2.hp > state.p1.hp) { state.p2Wins++; showScreenText('P2 VENCE!', 1000); }
+          else { showScreenText('EMPATE!', 1000); }
+          setTimeout(() => { nextRound(); }, 1500);
+        }
+
+        // cooldowns
+        if (state.p1.specialCooldown > 0) state.p1.specialCooldown--;
+        if (state.p2.specialCooldown > 0) state.p2.specialCooldown--;
+        if (state.p1.hitCooldown > 0) state.p1.hitCooldown--;
+        if (state.p2.hitCooldown > 0) state.p2.hitCooldown--;
+
+        // movimentação
+        const speed = 4;
+        // P1
+        if (keys['w'] && state.p1.y === 0) { state.p1.y = -60; setTimeout(() => { state.p1.y = 0; }, 300); }
+        if (keys['a']) state.p1.x = Math.max(50, state.p1.x - speed);
+        if (keys['d']) state.p1.x = Math.min(850, state.p1.x + speed);
+        state.p1.block = keys['s'] ? true : false;
+
+        // P2
+        if (keys['ArrowUp'] && state.p2.y === 0) { state.p2.y = -60; setTimeout(() => { state.p2.y = 0; }, 300); }
+        if (keys['ArrowLeft']) state.p2.x = Math.max(50, state.p2.x - speed);
+        if (keys['ArrowRight']) state.p2.x = Math.min(850, state.p2.x + speed);
+        state.p2.block = keys['ArrowDown'] ? true : false;
+
+        // ataques
+        if (keys['j']) { attack(1, 'punch'); keys['j'] = false; }
+        if (keys['k']) { attack(1, 'kick'); keys['k'] = false; }
+        if (keys['l']) { attack(1, 'special'); keys['l'] = false; }
+        if (keys['Numpad1']) { attack(2, 'punch'); keys['Numpad1'] = false; }
+        if (keys['Numpad2']) { attack(2, 'kick'); keys['Numpad2'] = false; }
+        if (keys['Numpad3']) { attack(2, 'special'); keys['Numpad3'] = false; }
+
+        updateUI();
+      }
+      requestAnimationFrame(gameLoop);
+    }
+
+    // eventos teclado
+    document.addEventListener('keydown', (e) => {
+      const key = e.key;
+      keys[key] = true;
+      if (['j','k','l','Numpad1','Numpad2','Numpad3'].includes(key)) e.preventDefault();
+      // fatality secreto: ↓↓→ + J (P1) / ↓↓→ + Numpad1 (P2)
+      if (key === 'j' && keys['ArrowDown'] && keys['ArrowDown'] && keys['ArrowRight']) {
+        if (state.p2.hp > 0 && state.p2.hp <= 30) {
+          state.p2.hp = 0;
+          showScreenText('FATALITY!', 1200);
+          addHistory('💀 FATALITY!');
+          updateUI();
+          state.ko = true;
+          state.roundActive = false;
+          setTimeout(() => { nextRound(); }, 2000);
+        }
+      }
+    });
+    document.addEventListener('keyup', (e) => {
+      keys[e.key] = false;
+    });
+
+    // restart
+    restartBtn.addEventListener('click', () => {
+      state.p1Wins = 0; state.p2Wins = 0; state.round = 1;
+      resetRound();
+      restartBtn.style.display = 'none';
+    });
+
+    // inicia
+    resetRound();
+    gameLoop();
+
+    // responsivo: reposicionar
+    window.addEventListener('resize', () => {
+      // apenas mantem
+    });
+
+    // prevenir scroll
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+    });
+
+  })();
+</script>
+</body>
+</html>
