@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MK · Luta Sombria</title>
+  <title>MK · Luta Sombria · Remaster</title>
   <style>
     /* ===== style.css ===== */
     * {
@@ -42,7 +42,6 @@
       border: 2px solid #5a2a2a;
     }
 
-    /* névoa / arena */
     .arena-fog {
       position: absolute;
       width: 100%;
@@ -126,64 +125,202 @@
       pointer-events: none;
     }
 
-    /* personagens (estilo geométrico) */
+    /* ===== NOVOS PERSONAGENS ESTILIZADOS ===== */
     .fighter {
       position: absolute;
       bottom: 40px;
-      width: 70px;
-      height: 120px;
+      width: 90px;
+      height: 140px;
       z-index: 10;
-      transition: all 0.08s linear;
+      transition: left 0.08s linear, transform 0.1s;
       pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .fighter.p1 {
       left: 160px;
-      background: radial-gradient(circle at 30% 20%, #f44, #700);
-      border-radius: 40% 40% 20% 20% / 60% 60% 20% 20%;
-      box-shadow: 0 0 30px #f22, inset 0 -20px 30px #500;
-      border: 3px solid #a33;
     }
 
     .fighter.p2 {
       right: 160px;
-      background: radial-gradient(circle at 70% 20%, #4af, #0044aa);
-      border-radius: 40% 40% 20% 20% / 60% 60% 20% 20%;
-      box-shadow: 0 0 30px #2af, inset 0 -20px 30px #003;
-      border: 3px solid #3af;
     }
 
+    /* corpo principal */
+    .fighter .torso {
+      width: 70px;
+      height: 70px;
+      border-radius: 30% 30% 20% 20% / 40% 40% 20% 20%;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.1s;
+    }
+
+    .p1 .torso {
+      background: radial-gradient(ellipse at 30% 20%, #ff5555, #881111);
+      border: 3px solid #cc4444;
+      box-shadow: 0 0 30px #ff2222, inset 0 -20px 30px #550000;
+    }
+
+    .p2 .torso {
+      background: radial-gradient(ellipse at 70% 20%, #5588ff, #1133aa);
+      border: 3px solid #4488ff;
+      box-shadow: 0 0 30px #2266ff, inset 0 -20px 30px #001166;
+    }
+
+    /* cabeça */
     .fighter .head {
-      width: 50px;
-      height: 50px;
-      background: inherit;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
-      margin: -10px auto 0;
+      margin-bottom: -8px;
+      position: relative;
+      z-index: 2;
       border: 3px solid rgba(255,255,200,0.3);
+      transition: all 0.1s;
     }
 
-    .fighter .body {
-      width: 60px;
-      height: 60px;
-      margin: 0 auto;
-      background: inherit;
-      border-radius: 30% 30% 10% 10%;
-      clip-path: polygon(10% 0%, 90% 0%, 80% 100%, 20% 100%);
+    .p1 .head {
+      background: radial-gradient(circle at 40% 30%, #ff6666, #aa2222);
+      box-shadow: 0 0 20px #ff4444;
     }
 
+    .p2 .head {
+      background: radial-gradient(circle at 60% 30%, #6699ff, #2244aa);
+      box-shadow: 0 0 20px #4488ff;
+    }
+
+    /* olhos */
+    .fighter .eye {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+      top: 18px;
+      box-shadow: 0 0 10px #fff;
+    }
+
+    .fighter .eye.left { left: 8px; }
+    .fighter .eye.right { right: 8px; }
+
+    .fighter .eye::after {
+      content: '';
+      display: block;
+      width: 5px;
+      height: 5px;
+      background: #111;
+      border-radius: 50%;
+      margin: 2px 0 0 3px;
+      transition: 0.1s;
+    }
+
+    /* braços */
+    .fighter .arm {
+      position: absolute;
+      width: 16px;
+      height: 50px;
+      border-radius: 20px;
+      top: 10px;
+      transition: transform 0.15s ease;
+      transform-origin: top center;
+    }
+
+    .p1 .arm {
+      background: radial-gradient(ellipse at 50% 30%, #dd4444, #771111);
+      border: 2px solid #aa3333;
+    }
+
+    .p2 .arm {
+      background: radial-gradient(ellipse at 50% 30%, #4477dd, #112277);
+      border: 2px solid #3366bb;
+    }
+
+    .fighter .arm.left {
+      left: -10px;
+      transform: rotate(20deg);
+    }
+
+    .fighter .arm.right {
+      right: -10px;
+      transform: rotate(-20deg);
+    }
+
+    /* pernas */
     .fighter .legs {
       display: flex;
-      justify-content: space-around;
+      gap: 8px;
       margin-top: -5px;
+      transition: all 0.1s;
     }
 
-    .fighter .legs div {
-      width: 18px;
-      height: 30px;
-      background: #221;
-      border-radius: 0 0 10px 10px;
-      border-left: 3px solid #443;
-      border-right: 3px solid #443;
+    .fighter .leg {
+      width: 22px;
+      height: 40px;
+      border-radius: 0 0 12px 12px;
+      transition: all 0.1s;
+    }
+
+    .p1 .leg {
+      background: linear-gradient(to bottom, #661111, #330000);
+      border-left: 2px solid #883333;
+      border-right: 2px solid #883333;
+    }
+
+    .p2 .leg {
+      background: linear-gradient(to bottom, #112266, #000033);
+      border-left: 2px solid #334488;
+      border-right: 2px solid #334488;
+    }
+
+    /* ===== ANIMAÇÕES DE ATAQUE ===== */
+    .fighter.attacking .arm.right {
+      animation: punchAnim 0.2s ease forwards;
+    }
+
+    .fighter.kicking .leg:last-child {
+      animation: kickAnim 0.25s ease forwards;
+    }
+
+    .fighter.special .torso {
+      animation: specialGlow 0.3s ease;
+    }
+
+    @keyframes punchAnim {
+      0% { transform: rotate(-20deg) translateX(0); }
+      50% { transform: rotate(-80deg) translateX(30px) scale(1.3); }
+      100% { transform: rotate(-20deg) translateX(0); }
+    }
+
+    @keyframes kickAnim {
+      0% { transform: rotate(0deg) scale(1); }
+      50% { transform: rotate(40deg) scale(1.4) translateX(20px); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+
+    @keyframes specialGlow {
+      0% { filter: brightness(1); transform: scale(1); }
+      50% { filter: brightness(2) drop-shadow(0 0 40px #ff0); transform: scale(1.1); }
+      100% { filter: brightness(1); transform: scale(1); }
+    }
+
+    .fighter.blocking .torso {
+      filter: brightness(0.5);
+      transform: scale(0.9) translateY(10px);
+    }
+
+    .fighter.hit {
+      animation: flinch 0.2s ease;
+    }
+
+    @keyframes flinch {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-15px) rotate(-5deg); }
+      75% { transform: translateX(15px) rotate(5deg); }
+      100% { transform: translateX(0); }
     }
 
     /* efeitos de golpe */
@@ -277,7 +414,7 @@
     @media (max-width: 700px) {
       .health-label { font-size: 0.8rem; }
       .timer { font-size: 1.4rem; padding: 2px 14px; }
-      .fighter { transform: scale(0.7); }
+      .fighter { transform: scale(0.7); transform-origin: bottom center; }
       .screen-text { font-size: 2.8rem; padding: 10px 30px; }
     }
   </style>
@@ -301,8 +438,35 @@
     <div class="timer" id="timerDisplay">60</div>
 
     <!-- fighters -->
-    <div class="fighter p1" id="fighter1"><div class="head"></div><div class="body"></div><div class="legs"><div></div><div></div></div></div>
-    <div class="fighter p2" id="fighter2"><div class="head"></div><div class="body"></div><div class="legs"><div></div><div></div></div></div>
+    <div class="fighter p1" id="fighter1">
+      <div class="head">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+      </div>
+      <div class="torso">
+        <div class="arm left"></div>
+        <div class="arm right"></div>
+      </div>
+      <div class="legs">
+        <div class="leg"></div>
+        <div class="leg"></div>
+      </div>
+    </div>
+
+    <div class="fighter p2" id="fighter2">
+      <div class="head">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+      </div>
+      <div class="torso">
+        <div class="arm left"></div>
+        <div class="arm right"></div>
+      </div>
+      <div class="legs">
+        <div class="leg"></div>
+        <div class="leg"></div>
+      </div>
+    </div>
 
     <!-- textos -->
     <div class="screen-text" id="screenText">FIGHT!</div>
@@ -395,6 +559,22 @@
       }
     }
 
+    // animação de ataque
+    function animateAttack(player, type) {
+      const el = player === 1 ? p1 : p2;
+      el.classList.remove('attacking', 'kicking', 'special');
+      if (type === 'punch') {
+        el.classList.add('attacking');
+        setTimeout(() => el.classList.remove('attacking'), 300);
+      } else if (type === 'kick') {
+        el.classList.add('kicking');
+        setTimeout(() => el.classList.remove('kicking'), 300);
+      } else if (type === 'special') {
+        el.classList.add('special');
+        setTimeout(() => el.classList.remove('special'), 400);
+      }
+    }
+
     // golpe
     function applyHit(attacker, defender, damage, knockback = 30, isSpecial = false) {
       if (state.ko || !state.roundActive) return;
@@ -405,12 +585,20 @@
       }
       defender.hp = Math.max(0, defender.hp - damage);
       defender.hitCooldown = 10;
+      
       // flinch / knockback
       const dir = attacker === state.p1 ? 1 : -1;
       defender.x = Math.min(850, Math.max(50, defender.x + dir * knockback));
       updateUI();
       spawnBlood(defender.x + 30, 80);
       shakeScreen(damage > 10 ? 10 : 5);
+
+      // animação de hit no defensor
+      const defEl = defender === state.p1 ? p1 : p2;
+      defEl.classList.remove('hit');
+      void defEl.offsetWidth;
+      defEl.classList.add('hit');
+      setTimeout(() => defEl.classList.remove('hit'), 300);
 
       if (isSpecial) addHistory(`💥 ESPECIAL! -${damage}`);
       else addHistory(`💢 -${damage}`);
@@ -434,11 +622,11 @@
       if (state.ko || !state.roundActive) return;
       const attacker = player === 1 ? state.p1 : state.p2;
       const defender = player === 1 ? state.p2 : state.p1;
-      const aEl = player === 1 ? p1 : p2;
-      const dEl = player === 1 ? p2 : p1;
-
+      
       const dist = Math.abs(attacker.x - defender.x);
       if (dist > 110) { addHistory('❌ longe'); return; }
+
+      animateAttack(player, type);
 
       let damage = 0, knock = 20, special = false;
       if (type === 'punch') { damage = 5; knock = 15; }
@@ -446,10 +634,11 @@
       else if (type === 'special') {
         if (attacker.specialCooldown > 0) { addHistory('⏳ recarga especial'); return; }
         damage = 15; knock = 40; special = true;
-        attacker.specialCooldown = 300; // 5s ~ 300 frames (60fps)
+        attacker.specialCooldown = 300;
         // efeito flash
-        aEl.style.boxShadow = '0 0 80px #ff0';
-        setTimeout(() => aEl.style.boxShadow = '', 200);
+        const el = player === 1 ? p1 : p2;
+        el.style.filter = 'brightness(2) drop-shadow(0 0 40px #ff0)';
+        setTimeout(() => el.style.filter = '', 300);
       }
       applyHit(attacker, defender, damage, knock, special);
 
@@ -481,6 +670,8 @@
       state.timer = 60;
       timerDisplay.textContent = '60';
       restartBtn.style.display = 'none';
+      p1.classList.remove('blocking');
+      p2.classList.remove('blocking');
       updateUI();
       showScreenText('FIGHT!', 700);
       addHistory('⚔️ Round ' + state.round);
@@ -489,7 +680,6 @@
     // next round
     function nextRound() {
       if (state.p1Wins >= 2 || state.p2Wins >= 2) {
-        // fim
         restartBtn.style.display = 'block';
         showScreenText(`🏆 ${state.p1Wins>state.p2Wins?'P1':'P2'} CAMPEÃO!`, 3000);
         return;
@@ -508,7 +698,6 @@
         } else {
           state.timer = 0;
           timerDisplay.textContent = '0';
-          // decisão por vida
           state.roundActive = false;
           if (state.p1.hp > state.p2.hp) { state.p1Wins++; showScreenText('P1 VENCE!', 1000); }
           else if (state.p2.hp > state.p1.hp) { state.p2Wins++; showScreenText('P2 VENCE!', 1000); }
@@ -529,20 +718,24 @@
         if (keys['a']) state.p1.x = Math.max(50, state.p1.x - speed);
         if (keys['d']) state.p1.x = Math.min(850, state.p1.x + speed);
         state.p1.block = keys['s'] ? true : false;
+        p1.classList.toggle('blocking', state.p1.block);
 
         // P2
         if (keys['ArrowUp'] && state.p2.y === 0) { state.p2.y = -60; setTimeout(() => { state.p2.y = 0; }, 300); }
         if (keys['ArrowLeft']) state.p2.x = Math.max(50, state.p2.x - speed);
         if (keys['ArrowRight']) state.p2.x = Math.min(850, state.p2.x + speed);
         state.p2.block = keys['ArrowDown'] ? true : false;
+        p2.classList.toggle('blocking', state.p2.block);
 
-        // ataques
+        // ATAQUES - P1
         if (keys['j']) { attack(1, 'punch'); keys['j'] = false; }
         if (keys['k']) { attack(1, 'kick'); keys['k'] = false; }
         if (keys['l']) { attack(1, 'special'); keys['l'] = false; }
-        if (keys['Numpad1']) { attack(2, 'punch'); keys['Numpad1'] = false; }
-        if (keys['Numpad2']) { attack(2, 'kick'); keys['Numpad2'] = false; }
-        if (keys['Numpad3']) { attack(2, 'special'); keys['Numpad3'] = false; }
+
+        // ATAQUES - P2 (CORRIGIDO)
+        if (keys['1']) { attack(2, 'punch'); keys['1'] = false; }
+        if (keys['2']) { attack(2, 'kick'); keys['2'] = false; }
+        if (keys['3']) { attack(2, 'special'); keys['3'] = false; }
 
         updateUI();
       }
@@ -553,10 +746,14 @@
     document.addEventListener('keydown', (e) => {
       const key = e.key;
       keys[key] = true;
-      if (['j','k','l','Numpad1','Numpad2','Numpad3'].includes(key)) e.preventDefault();
-      // fatality secreto: ↓↓→ + J (P1) / ↓↓→ + Numpad1 (P2)
+      // Prevenir comportamentos padrão
+      if (['j','k','l','1','2','3','ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(key)) {
+        e.preventDefault();
+      }
+      
+      // Fatality secreto: ↓↓→ + J (P1) / ↓↓→ + 1 (P2)
       if (key === 'j' && keys['ArrowDown'] && keys['ArrowDown'] && keys['ArrowRight']) {
-        if (state.p2.hp > 0 && state.p2.hp <= 30) {
+        if (state.p2.hp > 0 && state.p2.hp <= 30 && state.roundActive) {
           state.p2.hp = 0;
           showScreenText('FATALITY!', 1200);
           addHistory('💀 FATALITY!');
@@ -581,11 +778,6 @@
     // inicia
     resetRound();
     gameLoop();
-
-    // responsivo: reposicionar
-    window.addEventListener('resize', () => {
-      // apenas mantem
-    });
 
     // prevenir scroll
     window.addEventListener('keydown', (e) => {
